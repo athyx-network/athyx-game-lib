@@ -1,0 +1,393 @@
+<!-- Extracted by the Athyx-Network -->
+<!-- https://github.com/athyx-network/athyx-gamelib-->
+
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Surf GO</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+  <link href="fonts/pixelify.css" rel="stylesheet" />
+  <link rel="stylesheet" href="TemplateData/style.css" />
+  <style>
+    #athyx-loading-screen {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease;
+    }
+    #athyx-loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #athyx-logo {
+      max-width: 40%;
+      max-height: 40%;
+      margin-bottom: 30px;
+    }
+    #athyx-bar-wrap {
+      width: 300px;
+      height: 12px;
+      background: #222;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #444;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+    #athyx-bar-inner {
+      width: 0%;
+      height: 100%;
+      background: #fff;
+      transition: width 0.3s ease;
+    }
+    #athyx-credit {
+      margin-top: 14px;
+      color: #fff;
+      font-family: "Pixelify Sans", system-ui, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+  <script>
+    function asyncResolve(val) {
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          resolve(val);
+        }, 0);
+      });
+    }
+
+    const mockPlayer = {
+      isAuthorized: function () { return true; },
+      getName: function () { return "Player"; },
+      getPhoto: function () { return ""; },
+      getUniqueID: function () { return "local_player"; },
+      signature: "mock_signature",
+      getSignature: function () { return asyncResolve("mock_signature"); },
+      getData: function () {
+        try {
+          let saved = localStorage.getItem("surf_go_data");
+          let obj = saved ? JSON.parse(saved) : {};
+          return asyncResolve(obj);
+        } catch (e) {
+          return asyncResolve({});
+        }
+      },
+      setData: function (data) {
+        try {
+          let current = localStorage.getItem("surf_go_data");
+          let obj = current ? JSON.parse(current) : {};
+          Object.assign(obj, data || {});
+          localStorage.setItem("surf_go_data", JSON.stringify(obj));
+        } catch (e) { }
+        return asyncResolve();
+      },
+      getStats: function () {
+        try {
+          let saved = localStorage.getItem("surf_go_stats");
+          let obj = saved ? JSON.parse(saved) : {};
+          return asyncResolve(obj);
+        } catch (e) {
+          return asyncResolve({});
+        }
+      },
+      setStats: function (stats) {
+        try {
+          let current = localStorage.getItem("surf_go_stats");
+          let obj = current ? JSON.parse(current) : {};
+          Object.assign(obj, stats || {});
+          localStorage.setItem("surf_go_stats", JSON.stringify(obj));
+        } catch (e) { }
+        return asyncResolve();
+      }
+    };
+
+    window.player = mockPlayer;
+
+    const mockPayments = {
+      getCatalog: function () { return asyncResolve([]); },
+      getPurchases: function () { return asyncResolve([]); },
+      consumePurchase: function () { return asyncResolve(); },
+      purchase: function () { return asyncResolve(); }
+    };
+    window.payments = mockPayments;
+
+    const mockLeaderboard = {
+      getLeaderboardPlayerEntry: function () { return asyncResolve({}); },
+      setLeaderboardScore: function () { return asyncResolve(); },
+      getLeaderboardEntries: function () { return asyncResolve({ entries: [] }); }
+    };
+    window.leaderboard = mockLeaderboard;
+
+    const mockYsdk = {
+      environment: { i18n: { lang: "en" } },
+      deviceInfo: {
+        isDesktop: function () { return true; },
+        isMobile: function () { return false; },
+        isTablet: function () { return false; },
+        getType: function () { return "desktop"; }
+      },
+      features: {
+        LoadingAPI: { ready: function () { } }
+      },
+      auth: {
+        openAuthDialog: function () { return asyncResolve(); }
+      },
+      clipboard: {
+        writeText: function () { return asyncResolve(); }
+      },
+      on: function () { },
+      serverTime: function () { return Date.now(); },
+      getPlayer: function () { return asyncResolve(mockPlayer); },
+      getPayments: function () { return asyncResolve(mockPayments); },
+      getFlags: function () {
+        return asyncResolve({
+          vip_gifts_enabled: "false",
+          promo_enabled: "false",
+          multiplayer_enabled: "false",
+          multiplayer_auto_enable: "false",
+          first_open_game_tutorial_index: "0",
+          open_game_gifts_id: "-1",
+          open_game_gift_case_id: "-1",
+          open_game_gift_hands_id: "-1",
+          open_game_gift_weapon_id: "-1",
+          fix: "false",
+          fix2: "false",
+          blocklist_ids: "-",
+          active_special_promocodes: "0",
+          premiumPacksState: "2",
+          multiplayerDailyRewardsMultiplier: "1"
+        });
+      },
+      getLeaderboards: function () { return asyncResolve(mockLeaderboard); },
+      adv: {
+        showFullscreenAdv: function (opts) { if (opts && opts.callbacks && opts.callbacks.onClose) setTimeout(function () { opts.callbacks.onClose(true); }, 0); },
+        showRewardedVideo: function (opts) { if (opts && opts.callbacks && opts.callbacks.onRewarded) setTimeout(function () { opts.callbacks.onRewarded(); }, 0); if (opts && opts.callbacks && opts.callbacks.onClose) setTimeout(function () { opts.callbacks.onClose(); }, 0); },
+        showBannerAdv: function () { return asyncResolve({ stickyAdvIsShowing: false }); },
+        hideBannerAdv: function () { return asyncResolve({ stickyAdvIsShowing: false }); },
+        getBannerAdvStatus: function () { return asyncResolve({ stickyAdvIsShowing: false }); }
+      },
+      shortcut: {
+        canShowPrompt: function () { return asyncResolve({ canShow: false }); },
+        showPrompt: function () { return asyncResolve({ outcome: "accepted" }); }
+      },
+      feedback: {
+        canReview: function () { return asyncResolve({ value: false }); },
+        requestReview: function () { return asyncResolve({ feedbackSent: true }); }
+      }
+    };
+
+    window.ysdk = mockYsdk;
+    window.ym = window.ym || function () { };
+    window.YaGames = {
+      init: function () {
+        return asyncResolve(mockYsdk);
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <div id="athyx-loading-screen">
+    <img id="athyx-logo" src="logo.png" alt="Athyx Network" />
+    <div id="athyx-bar-wrap">
+      <div id="athyx-bar-inner"></div>
+    </div>
+    <p id="athyx-credit">Ported by Athyx Network</p>
+  </div>
+  <script>
+    (function () {
+      var progress = 0;
+      var iv = setInterval(function () {
+        progress += (50 - progress) * 0.1;
+        var bar = document.getElementById("athyx-bar-inner");
+        if (bar) bar.style.width = progress + "%";
+      }, 200);
+      window.__athyxDismissLoader = function (finalProgress) {
+        clearInterval(iv);
+        var bar = document.getElementById("athyx-bar-inner");
+        if (bar) bar.style.width = (finalProgress || 100) + "%";
+        setTimeout(function () {
+          var screen = document.getElementById("athyx-loading-screen");
+          if (screen) {
+            screen.classList.add("fade-out");
+            setTimeout(function () { screen.remove(); }, 550);
+          }
+        }, 300);
+      };
+    })();
+  </script>
+  <div class="circles" id="cuboid_anim">
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div class="circle3"></div>
+    <div class="circle4"></div>
+    <div class="circle5"></div>
+    <div class="circle6"></div>
+    <div class="circle7"></div>
+    <div class="circle8"></div>
+    <div class="circle9"></div>
+    <div class="circle10"></div>
+    <div class="circle11"></div>
+    <div class="circle12"></div>
+    <div class="circle13"></div>
+    <div class="circle14"></div>
+    <div class="circle15"></div>
+  </div>
+  <div id="unity-container" style="position: absolute; width: 100%; height: 100%; left: 0%; top: 0%;">
+    <canvas id="unity-canvas" style="position: absolute; width: 100%; height: 100%;"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+    </div>
+    <div id="unity-warning"> </div>
+  </div>
+  <script id="base">
+    var myGameInstance = null;
+    var leaderboard = mockLeaderboard;
+    var player = mockPlayer;
+    var isDeletedGarbage = false;
+    var ysdk = mockYsdk;
+    var isYsdkInitialize = true;
+
+    function initYsdk() {
+      console.log('Yandex SDK start initialization');
+      return YaGames.init().then(y => {
+        console.log('Yandex SDK initialized');
+        ysdk = y;
+        return y;
+      })
+        .catch(console.error);
+    }
+
+    function initLeaderboard() {
+      if (ysdk) {
+        ysdk.getLeaderboards().then(_lb => leaderboard = _lb);
+      }
+    }
+
+    function initPlayer() {
+      if (ysdk === null) {
+        return initYsdk().then(y => {
+          return y.getPlayer().then(_player => {
+            window.player = _player;
+            player = _player;
+            return _player;
+          });
+        });
+      } else {
+        return ysdk.getPlayer().then(_player => {
+          window.player = _player;
+          player = _player;
+          return _player;
+        });
+      }
+    }
+
+    function checkCanShowShorcutDialog() {
+      initYsdk().then(y => {
+        y.shortcut.canShowPrompt().then(prompt => {
+          if (prompt.canShow && myGameInstance) {
+            myGameInstance.SendMessage("Yandex WebGL", "ShortcutDialogCanShow");
+          }
+        });
+      });
+    }
+
+    var container = document.querySelector("#unity-container");
+    var canvas = document.querySelector("#unity-canvas");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var progressBarFull = document.querySelector("#unity-progress-bar-full");
+    var warningBanner = document.querySelector("#unity-warning");
+
+    function isMobileLike() {
+      if (navigator.userAgentData && 'mobile' in navigator.userAgentData) {
+        return navigator.userAgentData.mobile;
+      }
+      if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+        return true;
+      }
+      const ua = navigator.userAgent || '';
+      if (/Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(ua)) return true;
+      const shortSide = Math.min(screen.width, screen.height);
+      return shortSide <= 820;
+    }
+
+    const nativeDPR = window.devicePixelRatio || 1;
+    const mobileDPR = Math.min(0.85 * nativeDPR, nativeDPR);
+    const desktopDPR = Math.min(1 * nativeDPR, nativeDPR);
+
+    const dpr = isMobileLike() ? mobileDPR : desktopDPR;
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/db24fe51046f2eae7e7bdc07606e55d1.loader.js";
+
+    var config = {
+      dataUrl: buildUrl + "/2a15de349ac013cf02a58d5a0f3356b7.data",
+      frameworkUrl: buildUrl + "/d9269ac45cb8d5de2795a664bf29db3a.framework.js",
+      codeUrl: buildUrl + "/eaafa628ad4d4f6425b2eca2c950924c.wasm",
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName: "Kot Games",
+      productName: "Surf GO",
+      productVersion: "3.506",
+      devicePixelRatio: dpr
+    };
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      var meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      container.className = "unity-mobile";
+      canvas.className = "unity-mobile";
+    } else {
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+    }
+
+    canvas.style.background = "center / cover";
+    loadingBar.style.display = "block";
+
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        progressBarFull.style.width = 100 * progress + "%";
+      }).then((unityInstance) => {
+        myGameInstance = unityInstance;
+        if (window.__athyxDismissLoader) window.__athyxDismissLoader(100);
+
+        myGameInstance.SendMessage("Yandex WebGL", "InitializeYandexInstance");
+
+        if (isDeletedGarbage === false) {
+          const anim = document.getElementById("cuboid_anim");
+          if (anim) anim.remove();
+          const bar = document.getElementById("unity-loading-bar");
+          if (bar) bar.remove();
+          isDeletedGarbage = true;
+        }
+      }).catch(error => {
+        console.error("Unity Instance Error:", error);
+        if (isDeletedGarbage === false) {
+          const anim = document.getElementById("cuboid_anim");
+          if (anim) anim.remove();
+          loadingBar.style.display = "none";
+          isDeletedGarbage = true;
+        }
+      });
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+
+</html>
