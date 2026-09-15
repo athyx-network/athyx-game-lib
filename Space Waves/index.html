@@ -33,6 +33,29 @@
 	</div>
 
 	<script>
+		// Mock MSStartSDK to prevent crashes since we removed the trackers
+		window.loadAds = function() {};
+		window.loadInterstitialAd = function() {};
+		window.loadRewardedAd = function() {};
+		
+		window.showInterstitialAd = async function() {
+			if (window.gameInstance) {
+				window.gameInstance.SendMessage('MSStartSDK', 'OnInterstitialAdClose');
+			}
+		};
+		
+		window.showRewardedAd = async function() {
+			if (window.gameInstance) {
+				window.gameInstance.SendMessage('MSStartSDK', 'OnReward');
+			}
+		};
+
+		window.migratePlayerPrefs = function() {
+			if (window.gameInstance) {
+				window.gameInstance.SendMessage('MSStartSDK', 'OnMigratePlayerPrefs', "");
+			}
+		};
+
 		const container = document.querySelector("#unity-container");
 		const canvas = document.querySelector("#unity-canvas");
 		const loadingCover = document.querySelector("#loading-cover");
