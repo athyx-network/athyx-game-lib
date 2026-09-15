@@ -176,8 +176,13 @@
         };
 
         function StartUnityInstance_IfUnloaded() {
-            if (spinner.style.display !== "none")
-                StartUnityInstance();
+            if (spinner.style.display !== "none") {
+                if (typeof StartUnityInstance === "function") {
+                    StartUnityInstance();
+                } else {
+                    setTimeout(StartUnityInstance_IfUnloaded, 100);
+                }
+            }
         }
 
         function LocalHost() {
