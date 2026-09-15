@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<base href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Space%20Waves/">
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Space Waves</title>
+	<link rel="stylesheet" href="TemplateData/style.css">
+	<style>
+		html, body { background: #111; margin: 0; padding: 0; width: 100%; height: 100%; }
+		#unity-container { width: 100%; height: 100%; position: absolute; }
+		#unity-canvas { width: 100%; height: 100%; }
+		#loading-cover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #222; display: flex; justify-content: center; align-items: center; }
+		#unity-loading-bar { text-align: center; }
+		#unity-progress-bar-empty { width: 200px; height: 10px; background: #444; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+		#unity-progress-bar-full { width: 0%; height: 100%; background: #fff; }
+	</style>
+</head>
+
+<body class="noselect">
+	<div id="unity-container">
+		<canvas id="unity-canvas"></canvas>
+	</div>
+	<div id="loading-cover">
+		<div id="unity-loading-bar">
+			<div id="unity-logo"><img src="logo.png" style="max-width: 200px;"></div>
+			<div id="unity-progress-bar-empty">
+				<div id="unity-progress-bar-full"></div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const container = document.querySelector("#unity-container");
+		const canvas = document.querySelector("#unity-canvas");
+		const loadingCover = document.querySelector("#loading-cover");
+		const progressBarFull = document.querySelector("#unity-progress-bar-full");
+
+		const buildUrl = "Build";
+		const loaderUrl = buildUrl + "/dae5c7bd2b15915f51ae4e56b8f5367d.loader.js";
+		const config = {
+			dataUrl: buildUrl + "/568ea6b3af616bd57f419c508c933303.data.unityweb",
+			frameworkUrl: buildUrl + "/c699bc4c24abfbdb4c8b3e15b0af7d3f.framework.js.unityweb",
+			codeUrl: buildUrl + "/7fb5141de5923189bc1dc5f94eb619f2.wasm.unityweb",
+			streamingAssetsUrl: "StreamingAssets",
+			companyName: "do.Games",
+			productName: "Space Waves",
+			productVersion: "1.1.2-ms",
+			matchWebGLToCanvasSize: false
+		};
+
+		var script = document.createElement("script");
+		script.src = loaderUrl;
+		script.onload = () => {
+			createUnityInstance(canvas, config, (progress) => {
+				progressBarFull.style.width = 100 * progress + "%";
+			}).then((unityInstance) => {
+				loadingCover.style.display = "none";
+				resizeCanvas();
+			}).catch((message) => {
+				alert(message);
+			});
+		};
+		document.body.appendChild(script);
+
+		function resizeCanvas() {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		}
+
+		window.addEventListener("resize", resizeCanvas);
+		resizeCanvas();
+	</script>
+</body>
+</html>
