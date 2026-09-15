@@ -8,9 +8,12 @@
   <meta charset="utf-8" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>Surf GO</title>
-  <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/TemplateData/favicon.ico" />
-  <link href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/fonts/pixelify.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/TemplateData/style.css" />
+  <link rel="shortcut icon"
+    href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/TemplateData/favicon.ico" />
+  <link href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/fonts/pixelify.css"
+    rel="stylesheet" />
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/TemplateData/style.css" />
   <style>
     #athyx-loading-screen {
       position: fixed;
@@ -25,15 +28,18 @@
       align-items: center;
       transition: opacity 0.5s ease;
     }
+
     #athyx-loading-screen.fade-out {
       opacity: 0;
       pointer-events: none;
     }
+
     #athyx-logo {
       max-width: 40%;
       max-height: 40%;
       margin-bottom: 30px;
     }
+
     #athyx-bar-wrap {
       width: 300px;
       height: 12px;
@@ -41,14 +47,16 @@
       border-radius: 6px;
       overflow: hidden;
       border: 1px solid #444;
-      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     }
+
     #athyx-bar-inner {
       width: 0%;
       height: 100%;
       background: #fff;
       transition: width 0.3s ease;
     }
+
     #athyx-credit {
       margin-top: 14px;
       color: #fff;
@@ -198,7 +206,8 @@
 
 <body>
   <div id="athyx-loading-screen">
-    <img id="athyx-logo" src="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/logo.png" alt="Athyx Network" />
+    <img id="athyx-logo" src="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/logo.png"
+      alt="Athyx Network" />
     <div id="athyx-bar-wrap">
       <div id="athyx-bar-inner"></div>
     </div>
@@ -329,7 +338,49 @@
     const desktopDPR = Math.min(1 * nativeDPR, nativeDPR);
 
     const dpr = isMobileLike() ? mobileDPR : desktopDPR;
-    var buildUrl = "https://raw.githubusercontent.com/athyx-network/athyx-game-lib/main/Surf%20Go/Build";
+
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options) {
+      if (typeof url === 'string') {
+        let isData = url.endsWith('/2a15de349ac013cf02a58d5a0f3356b7.data');
+        let isWasm = url.endsWith('/eaafa628ad4d4f6425b2eca2c950924c.wasm');
+        
+        if (isData || isWasm) {
+          const numParts = isData ? 2 : 3;
+          console.log('Intercepted fetch for large file:', url, 'fetching', numParts, 'parts...');
+          
+          let promises = [];
+          for (let i = 0; i < numParts; i++) {
+            promises.push(originalFetch(`${url}.part${i}`).then(r => r.arrayBuffer()));
+          }
+          
+          try {
+            const buffers = await Promise.all(promises);
+            let totalLength = buffers.reduce((acc, b) => acc + b.byteLength, 0);
+            let combined = new Uint8Array(totalLength);
+            let offset = 0;
+            for (let b of buffers) {
+              combined.set(new Uint8Array(b), offset);
+              offset += b.byteLength;
+            }
+            console.log('Successfully reassembled:', url);
+            
+            return new Response(combined.buffer, {
+              status: 200,
+              headers: {
+                'Content-Type': isWasm ? 'application/wasm' : 'application/octet-stream'
+              }
+            });
+          } catch (e) {
+            console.error('Error fetching parts:', e);
+            return originalFetch(url, options);
+          }
+        }
+      }
+      return originalFetch(url, options);
+    };
+
+    var buildUrl = "https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Surf%20Go/Build";
     var loaderUrl = buildUrl + "/db24fe51046f2eae7e7bdc07606e55d1.loader.js";
 
     var config = {
