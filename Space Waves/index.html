@@ -40,19 +40,25 @@
 		
 		window.showInterstitialAd = async function() {
 			if (window.gameInstance) {
-				window.gameInstance.SendMessage('MSStartSDK', 'OnInterstitialAdClose');
+				setTimeout(() => {
+					window.gameInstance.SendMessage('MSStartSDK', 'OnInterstitialAdClose');
+				}, 100);
 			}
 		};
 		
 		window.showRewardedAd = async function() {
 			if (window.gameInstance) {
-				window.gameInstance.SendMessage('MSStartSDK', 'OnReward');
+				setTimeout(() => {
+					window.gameInstance.SendMessage('MSStartSDK', 'OnReward');
+				}, 100);
 			}
 		};
 
 		window.migratePlayerPrefs = function() {
 			if (window.gameInstance) {
-				window.gameInstance.SendMessage('MSStartSDK', 'OnMigratePlayerPrefs', "");
+				setTimeout(() => {
+					window.gameInstance.SendMessage('MSStartSDK', 'OnMigratePlayerPrefs', "");
+				}, 100);
 			}
 		};
 
@@ -80,8 +86,14 @@
 			createUnityInstance(canvas, config, (progress) => {
 				progressBarFull.style.width = 100 * progress + "%";
 			}).then((unityInstance) => {
+				window.gameInstance = unityInstance;
 				loadingCover.style.display = "none";
 				resizeCanvas();
+
+				// The game freezes on startup if it doesn't receive this callback
+				setTimeout(() => {
+					unityInstance.SendMessage('MSStartSDK', 'OnMigratePlayerPrefs', "");
+				}, 100);
 			}).catch((message) => {
 				alert(message);
 			});
