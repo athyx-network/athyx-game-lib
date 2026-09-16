@@ -2,6 +2,7 @@
 
 <html lang="en-us">
 <head>
+    <base href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Neon%20Balls/">
 <meta charset="utf-8"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
@@ -239,36 +240,13 @@ console.log('Init Player ysdk');
 
         function FullAdShow() {
             try {
-                if (nowFullAdOpen !== true && ysdk !== null) {
-                    ysdk.adv.showFullscreenAdv(
-                        {
-                            callbacks: {
-                                onOpen: () => {
-                                    console.log('Open Ad Interstitial');
-                                    nowFullAdOpen = true;
-                                    if (initGame === true) {
-                                        myGameInstance.SendMessage('YandexGame', 'OpenFullAd');
-                                    }
-                                },
-                                onClose: (wasShown) => {
-                                    nowFullAdOpen = false;
-                                    if (initGame === true) {
-                                        if (wasShown) {
-                                            myGameInstance.SendMessage('YandexGame', 'CloseFullAd', 'true');
-                                        }
-                                        else {
-                                            myGameInstance.SendMessage('YandexGame', 'CloseFullAd', 'false');
-                                        }
-                                    }
-                                    FocusGame();
-                                },
-                                onError: (error) => {
-                                    console.error('Error Ad Interstitial', error);
-                                    myGameInstance.SendMessage('YandexGame', 'ErrorFullAd');
-                                    FocusGame();
-                                }
-                            }
-                        });
+                console.log('Mock Open Ad Interstitial');
+                if (initGame === true && myGameInstance != null) {
+                    myGameInstance.SendMessage('YandexGame', 'OpenFullAd');
+                    setTimeout(() => {
+                        myGameInstance.SendMessage('YandexGame', 'CloseFullAd', 'true');
+                        FocusGame();
+                    }, 100);
                 }
             }
             catch (e) {
@@ -278,52 +256,22 @@ console.log('Init Player ysdk');
 
         function RewardedShow(id) {
             try {
-                ysdk.adv.showRewardedVideo(
-                    {
-                        callbacks:
-                        {
-                            onOpen: () => {
-                                console.log('Opened Video Ad');
-                                myGameInstance.SendMessage('YandexGame', 'OpenVideo');
-                            },
-                            onClose: () => {
-                                console.log('Closed Video Ad');
-                                myGameInstance.SendMessage('YandexGame', 'CloseVideo');
-                                FocusGame();
-                            },
-                            onRewarded: () => {
-                                console.log('Reward Video Ad');
-                                myGameInstance.SendMessage('YandexGame', 'RewardVideo', id);
-                            },
-                            onError: (e) => {
-                                console.error('Error Video Ad', e);
-                                myGameInstance.SendMessage('YandexGame', 'ErrorVideo');
-                            }
-                        }
-                    });
+                console.log('Mock Opened Video Ad');
+                if (myGameInstance != null) {
+                    myGameInstance.SendMessage('YandexGame', 'OpenVideo');
+                    setTimeout(() => {
+                        myGameInstance.SendMessage('YandexGame', 'RewardVideo', id);
+                        myGameInstance.SendMessage('YandexGame', 'CloseVideo');
+                        FocusGame();
+                    }, 100);
+                }
             } catch (err) {
                 console.error('CRASH Rewarded Video Ad Show: ', err.message);
             }
         }
 
         function StickyAdActivity(show) {
-            try {
-                ysdk.adv.getBannerAdvStatus().then(({ stickyAdvIsShowing, reason }) => {
-                    if (stickyAdvIsShowing) {
-                        if (!show) {
-                            ysdk.adv.hideBannerAdv();
-                        }
-                    }
-                    else if (reason) {
-                        console.log('Sticky ad are not shown. Reason:', reason);
-                    }
-                    else if (show) {
-                        ysdk.adv.showBannerAdv();
-                    }
-                })
-            } catch (e) {
-                console.error('CRASH Sticky Activity: ', e.message);
-            }
+            console.log('Mock StickyAdActivity');
         }
 
         function Review() {

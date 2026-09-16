@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <base href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Angry%20Neighbor/">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Angry Neighbor Recode</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      body { padding: 0; margin: 0; overflow: hidden; background: #000; }
+      #unity-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+      #unity-canvas { width: 100% !important; height: 100% !important; }
+      #athyx-loading-screen {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s ease;
+      }
+      #athyx-loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #athyx-logo {
+        max-width: 40%;
+        max-height: 40%;
+        margin-bottom: 30px;
+      }
+      #athyx-bar-wrap {
+        width: 300px;
+        height: 12px;
+        background: #222;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #444;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      }
+      #athyx-bar-inner {
+        width: 0%;
+        height: 100%;
+        background: #fff;
+        transition: width 0.3s ease;
+      }
+      #athyx-credit {
+        margin-top: 14px;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      #athyx-controls {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        font-family: system-ui, sans-serif;
+        z-index: 10000;
+        display: none;
+        pointer-events: none;
+        border: 1px solid #444;
+        box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        min-width: 400px;
+      }
+      #athyx-controls h2 {
+        margin-top: 0;
+        color: #ffaa00;
+        text-align: center;
+      }
+      #athyx-controls p {
+        margin: 8px 0;
+        line-height: 1.4;
+      }
+      .control-key {
+        color: #00e6ff;
+        font-weight: bold;
+      }
+      #athyx-controls-hint {
+        margin-top: 20px;
+        text-align: center;
+        color: #aaa;
+        font-size: 13px;
+      }
+    </style>
+  
+    <script>
+      window.fileMergerConfig = {
+        files: [ { name: 'Build/Web.data', parts: 4 }, { name: 'Build/Web.wasm', parts: 2 } ],
+        basePath: ""
+      };
+    </script>
+    <script src="fileMerger.js"></script>
+</head>
+  <body>
+    <div id="athyx-loading-screen">
+      <img id="athyx-logo" src="TemplateData/favicon.ico" alt="Athyx Network" />
+      <div id="athyx-bar-wrap">
+        <div id="athyx-bar-inner"></div>
+      </div>
+      <p id="athyx-credit">Ported by Athyx Network</p>
+      <p style="color: #888; font-family: system-ui, sans-serif; font-size: 14px; margin-top: 20px;">Press <strong>P</strong> to show controls at any time</p>
+    </div>
+    <div id="athyx-controls">
+      <h2>Controls</h2>
+      <p><span class="control-key">WASD</span>: Walk (obviously) you dont need touch controls for this version</p>
+      <p><span class="control-key">E</span>: Open Inventory</p>
+      <p><span class="control-key">F</span>: Interact (like opening doors or grabbing stuff)</p>
+      <p><span class="control-key">CTRL</span>: Crouch (probably have to fix this or smth cause CTRL + S closes the page)</p>
+      <p><span class="control-key">Shift</span>: Run</p>
+      <p style="margin-top: 15px; font-size: 14px; color: #ccc; font-style: italic;">
+        (Note: When you grab stuff, click E then drag the item into the three squares and press a number)
+      </p>
+      <p id="athyx-controls-hint">Press P to hide controls</p>
+    </div>
+    <script>
+      (function () {
+        var progress = 0;
+        var iv = setInterval(function () {
+          progress += (50 - progress) * 0.1;
+          var bar = document.getElementById("athyx-bar-inner");
+          if (bar) bar.style.width = progress + "%";
+        }, 200);
+        window.__athyxDismissLoader = function (finalProgress) {
+          clearInterval(iv);
+          var bar = document.getElementById("athyx-bar-inner");
+          if (bar) bar.style.width = (finalProgress || 100) + "%";
+          setTimeout(function () {
+            var screen = document.getElementById("athyx-loading-screen");
+            if (screen) {
+              screen.classList.add("fade-out");
+              setTimeout(function () { screen.remove(); }, 550);
+            }
+          }, 300);
+        };
+      })();
+
+      // Start with controls visible on loading screen
+      document.getElementById('athyx-controls').style.display = 'block';
+
+      // Global key listener
+      window.addEventListener('keydown', function(e) {
+        if (e.key && e.key.toLowerCase() === 'p') {
+          var c = document.getElementById('athyx-controls');
+          c.style.display = (c.style.display === 'none' || c.style.display === '') ? 'block' : 'none';
+        }
+        // Fix for CTRL+S triggering browser save instead of crouch+back
+        if (e.ctrlKey && e.key && (e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'w')) {
+          e.preventDefault();
+        }
+      });
+    </script>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=960 height=600></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    <script>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Angry%20Neighbor/Build";
+      var loaderUrl = buildUrl + "/Web.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/Web.data",
+        frameworkUrl: buildUrl + "/Web.framework.js",
+        codeUrl: buildUrl + "/Web.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Viet guy but yeah aka ricefarmer",
+        productName: "Angry Neighbor Recode",
+        productVersion: "3.0",
+        showBanner: unityShowBanner,
+      };
+
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+        unityShowBanner('WebGL builds are not supported on mobile devices.');
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+      }
+
+      canvas.style.background = "url('" + buildUrl + "/Web.jpg') center / cover";
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+          var athyxBar = document.getElementById("athyx-bar-inner");
+          if (athyxBar) athyxBar.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+          if (window.__athyxDismissLoader) window.__athyxDismissLoader(100);
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

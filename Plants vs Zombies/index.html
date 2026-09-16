@@ -5,6 +5,7 @@
 <html lang="en">
 
 <head>
+    <base href="https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/Plants%20vs%20Zombies/">
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 	<title>Plants Vs Zombies</title>
@@ -72,6 +73,14 @@
 			font-size: 16px;
 		}
 	</style>
+
+    <script>
+      window.fileMergerConfig = {
+        files: [ { name: 'res.zip', parts: 2 } ],
+        basePath: ""
+      };
+    </script>
+    <script src="fileMerger.js"></script>
 </head>
 
 <body>
