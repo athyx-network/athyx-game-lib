@@ -85,6 +85,11 @@
 		    cr_createRuntime("c2canvas");
 		}];
 
+        var script = document.createElement('script');
+        script.src = window.famobi_gameJS[0];
+        script.onload = window.famobi_gameJS[1];
+        document.head.appendChild(script);
+
 
 	</script>
 
