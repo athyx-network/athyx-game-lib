@@ -284,6 +284,16 @@
             });
 
             setTimeout(() => {
+              try {
+                xhr.dispatchEvent(new ProgressEvent('progress', {
+                  lengthComputable: true,
+                  loaded: buffer.byteLength,
+                  total: buffer.byteLength
+                }));
+                xhr.dispatchEvent(new Event('load'));
+              } catch (e) {
+                console.error("Event dispatch error:", e);
+              }
               if (xhr.onreadystatechange) xhr.onreadystatechange();
               if (xhr.onload) xhr.onload({ type: "load", target: xhr });
             }, 1);
