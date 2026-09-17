@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minecraft 1.12.2</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .progress-container {
+            width: 80%;
+            max-width: 400px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            height: 20px;
+            width: 0%;
+            background: #3b82f6;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <h2>Loading Game Files...</h2>
+    <div id="status">Starting...</div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <script>
+        const parts = [
+            '1.12.2.html.part-aa',
+            '1.12.2.html.part-ab',
+            '1.12.2.html.part-ac',
+            '1.12.2.html.part-ad',
+            '1.12.2.html.part-ae'
+        ];
+        const baseUrl = 'https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/eaglercraft-launcher/versions/';
+        
+        async function loadGame() {
+            const statusDiv = document.getElementById('status');
+            const progressDiv = document.getElementById('progressBar');
+            let fullHtml = '';
+            
+            try {
+                for (let i = 0; i < parts.length; i++) {
+                    statusDiv.innerText = `Downloading part ${i + 1} of ${parts.length}...`;
+                    const response = await fetch(baseUrl + parts[i]);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load ${parts[i]}: ${response.statusText}`);
+                    }
+                    const text = await response.text();
+                    fullHtml += text;
+                    progressDiv.style.width = `${((i + 1) / parts.length) * 100}%`;
+                }
+                
+                statusDiv.innerText = 'Initializing game...';
+                
+                setTimeout(() => {
+                    document.open();
+                    document.write(fullHtml);
+                    document.close();
+                }, 500);
+
+            } catch (error) {
+                statusDiv.innerText = 'Error loading game: ' + error.message;
+                statusDiv.style.color = 'red';
+            }
+        }
+        
+        loadGame();
+    </script>
+</body>
+</html>

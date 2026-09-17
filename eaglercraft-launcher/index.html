@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minyx Launcher by Athyx</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #e0e0e0;
+            --text-muted: #9e9e9e;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.2); }
+        }
+
+        /* Launcher Container */
+        .launcher-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Version Selector */
+        .version-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .version-selector label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        select {
+            width: 100%;
+            appearance: none;
+            background: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        select:focus, select:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        select option {
+            background: var(--bg-dark);
+            color: white;
+            padding: 1rem;
+        }
+
+        .custom-select::after {
+            content: '▼';
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 0.8rem;
+        }
+
+        /* Launch Button */
+        .btn-launch {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1.2rem 2rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-launch::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+            background: var(--primary-hover);
+        }
+
+        .btn-launch:hover::before {
+            left: 100%;
+        }
+
+        .btn-launch:active {
+            transform: translateY(1px);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.error {
+            background: rgba(239, 68, 68, 0.9);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <div class="launcher-container">
+        <div class="glass-panel">
+            
+            <div class="header">
+                <h1>Minyx Launcher by Athyx</h1>
+            </div>
+
+            <div class="version-selector">
+                <label for="versionSelect">Game Version</label>
+                <div class="custom-select">
+                    <select id="versionSelect">
+                        <option value="1.12.2">Minecraft 1.12.2</option>
+                        <option value="1.8.8">Minecraft 1.8.8</option>
+                        <option value="Indev">Minecraft Indev</option>
+                        <option value="1.3">Minecraft Beta 1.3</option>
+                        <option value="1.7.3">Minecraft Beta 1.7.3</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-launch" id="launchBtn" onclick="launchGame()">Play</button>
+
+
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        async function launchGame() {
+            const select = document.getElementById('versionSelect');
+            const version = select.options[select.selectedIndex].value;
+            const versionText = select.options[select.selectedIndex].text;
+            const btn = document.getElementById('launchBtn');
+            
+            // Button animation effect
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = '';
+            }, 150);
+
+            showToast(`Loading ${versionText} from CDN...`);
+            
+            const url = `https://cdn.jsdelivr.net/gh/athyx-network/athyx-game-lib@main/eaglercraft-launcher/versions/${version}.html`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const html = await response.text();
+                
+                document.open();
+                document.write(html);
+                document.close();
+            } catch (err) {
+                showToast(`Error loading game: ${err.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
